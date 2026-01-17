@@ -4,16 +4,43 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { useState } from "react";
 
+
+const supabase = createClient();
+
 function LoginPage() {
+    const router = useRouter()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSubmit = async () => {};
+
+  const handleSubmit = async (e) => {
+        e.preventDefault()
+        setLoading(true)
+        setError(null)
+
+        try {
+           const {error} =  await supabase.auth.signInWithPassword({
+                email,
+                password
+             }) 
+             if(error) throw error;
+
+             router.push("/")
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "signup failed") 
+        }
+        finally{
+             setLoading(false)
+        }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
@@ -65,10 +92,10 @@ function LoginPage() {
         <p className="text-center text-zinc-400 mt-6">
           If you do not have account.Please sign Up? {""}
           <Link
-            href={"/auth/login"}
+            href={"/auth/signup"}
             className="text-emerald-400 hover:text-emerald-300"
           >
-            Login
+            SignUp
           </Link>
         </p>
       </Card>
